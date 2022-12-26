@@ -1,10 +1,11 @@
+#define SDL_MAIN_HANDLED
+
 #include <maltipoo/GPU.h>
 #include <maltipoo/backends/vulkan/GPU.h>
 #include <fstream>
 
 #include <glm/glm.hpp>
 
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 
 static std::vector<uint32_t> readFile(const std::string &filename)
@@ -34,7 +35,11 @@ const std::vector<uint16_t> indices = {0, 1, 2};
 
 int main()
 {
-    auto gpu = CreateVulkanGPU();
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+    int width = 1280, height = 1024;
+    SDL_Window *window = SDL_CreateWindow("SDL Vulkan Sample", 0, 0, 1280, 1024, SDL_WINDOW_VULKAN);
+
+    auto gpu = CreateVulkanGPU(window, width, height);
 
     auto vertFile = readFile("triangle.vert.spv");
     auto fragFile = readFile("triangle.frag.spv");
@@ -80,7 +85,7 @@ int main()
         }
 
         GPUCommandListRef commandList = gpu->CreateCommandList();
-        GPURenderTargetRef renderTarget = gpu->BeginFrame();
+        GPURenderTargetRef renderTarget = gpu->GetRenderTarget();
 
         commandList->Begin();
         commandList->BeginRenderPass(renderTarget);
@@ -101,4 +106,8 @@ int main()
         gpu->Submit(commandList);
         gpu->EndFrame();
     }
+
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
 }

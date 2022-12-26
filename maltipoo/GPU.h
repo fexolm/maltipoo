@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <memory>
 #include <vector>
 #include <vulkan/vulkan.h>
@@ -184,7 +183,7 @@ public:
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) = 0;
 
-	virtual GPURenderTargetRef BeginFrame() = 0;
+	virtual GPURenderTargetRef GetRenderTarget() = 0;
 
 	virtual void EndFrame() = 0;
 

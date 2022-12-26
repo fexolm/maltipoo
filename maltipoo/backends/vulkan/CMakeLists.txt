@@ -12,7 +12,6 @@ add_library(
     VulkanDevice.cpp 
     VulkanRenderPass.cpp 
     VulkanInstance.cpp
-    VulkanWindow.cpp
     VulkanImage.cpp
     VulkanSampler.cpp
     VulkanShader.cpp

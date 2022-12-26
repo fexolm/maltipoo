@@ -12,7 +12,6 @@
 #include "VulkanRenderTarget.h"
 #include "VulkanSampler.h"
 #include "VulkanShader.h"
-#include "VulkanWindow.h"
 
 #include <SDL2/SDL.h>
 #include <glm/vec2.hpp>
@@ -30,7 +29,7 @@ class VulkanGPU : public GPUDriver
 {
 
 public:
-	VulkanGPU();
+	VulkanGPU(SDL_Window *window, int width, int height);
 
 	virtual ~VulkanGPU() override;
 
@@ -48,7 +47,7 @@ public:
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
 
-	virtual GPURenderTargetRef BeginFrame() override;
+	virtual GPURenderTargetRef GetRenderTarget() override;
 
 	virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
 
@@ -58,19 +57,15 @@ public:
 
 	virtual void EndFrame() override;
 
-	VulkanRenderPassRef createRenderPass(int imgIdx);
+	VulkanRenderPassRef CreateRenderPass(int imgIdx);
 
-	VkFramebuffer createFramebuffer(VulkanRenderPassRef renderPass, const VulkanRenderTarget &renderTarget);
+	VkFramebuffer CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanRenderTarget &renderTarget);
 
-	VkExtent2D getExtent();
+	VkExtent2D GetExtent();
 
 	VulkanDescriptorSetRef CreateDescriptorSet(const GPUGraphicsPipelineRef &pipeline, int num);
 
-	void waitIdle();
-
 private:
-	VulkanWindow window;
-
 	VulkanInstanceRef instance;
 	VulkanDeviceRef device;
 
