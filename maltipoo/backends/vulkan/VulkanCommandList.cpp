@@ -1,5 +1,6 @@
 #include "VulkanCommandList.h"
 #include "VulkanBuffer.h"
+#include "Shared.h"
 
 VulkanCommandList::VulkanCommandList(VulkanDeviceRef device, VulkanCommandPoolRef commandPool, VkCommandBuffer commandBuffer, class VulkanGPU *gpu)
 	: device(device), commandPool(commandPool), commandBuffer(commandBuffer), gpu(gpu)
@@ -18,19 +19,19 @@ void VulkanCommandList::Begin()
 	beginInfo.pInheritanceInfo = nullptr;
 	beginInfo.flags = 0;
 	beginInfo.pNext = nullptr;
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	VULKAN_GPU_SAFE_CALL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 }
 
 void VulkanCommandList::End()
 {
-	vkEndCommandBuffer(commandBuffer);
+	VULKAN_GPU_SAFE_CALL(vkEndCommandBuffer(commandBuffer));
 }
 
-void VulkanCommandList::BeginRenderPass(const GPURenderTargetRef &renderTarget)
+void VulkanCommandList::BeginRenderPass(const GPUTextureRef &renderTarget)
 {
-	VulkanRenderTarget *vulkanRenderTarget = static_cast<VulkanRenderTarget *>(renderTarget.get());
+	VulkanTexture *vulkanRenderTarget = static_cast<VulkanTexture *>(renderTarget.get());
 
-	VulkanRenderPassRef renderPass = gpu->CreateRenderPass(vulkanRenderTarget->imageIdx);
+	VulkanRenderPassRef renderPass = gpu->CreateRenderPass();
 	VkFramebuffer framebuffer = gpu->CreateFramebuffer(renderPass, *vulkanRenderTarget);
 
 	VkRenderPassBeginInfo renderPassBeginInfo;

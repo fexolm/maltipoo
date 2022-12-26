@@ -2,10 +2,11 @@
 
 #include "VulkanDevice.h"
 #include "maltipoo/GPU.h"
+#include "VulkanTexture.h"
 
 #include <vulkan/vulkan.h>
 
-struct VulkanImage : GPUTexture
+struct VulkanImage : VulkanTexture
 {
 	VulkanDeviceRef device;
 	VkImage image;
@@ -13,6 +14,8 @@ struct VulkanImage : GPUTexture
 	VkImageView view;
 
 	VulkanImage(VulkanDeviceRef device, VkImage img, VkDeviceMemory memory, VkImageView view);
+
+	virtual const VkImageView &GetImageView() const override;
 
 	virtual ~VulkanImage() override;
 };

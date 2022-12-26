@@ -9,7 +9,7 @@
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanRenderPass.h"
-#include "VulkanRenderTarget.h"
+#include "VulkanSwapchain.h"
 #include "VulkanSampler.h"
 #include "VulkanShader.h"
 
@@ -47,7 +47,7 @@ public:
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
 
-	virtual GPURenderTargetRef GetRenderTarget() override;
+	virtual GPUTextureRef GetRenderTarget() override;
 
 	virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
 
@@ -57,9 +57,9 @@ public:
 
 	virtual void EndFrame() override;
 
-	VulkanRenderPassRef CreateRenderPass(int imgIdx);
+	VulkanRenderPassRef CreateRenderPass();
 
-	VkFramebuffer CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanRenderTarget &renderTarget);
+	VkFramebuffer CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture &renderTarget);
 
 	VkExtent2D GetExtent();
 
@@ -75,8 +75,9 @@ private:
 	VkPresentModeKHR presentMode;
 	VkSurfaceCapabilitiesKHR caps;
 	VkExtent2D extent;
-	VkSwapchainKHR swapchain;
-	std::vector<VkImageView> swapchainImageViews;
+
+	VulkanSwapchainRef swapchain;
+	std::vector<VulkanSwapchainImageViewRef> swapchainImageViews;
 
 	VulkanCommandPoolRef commandPool;
 

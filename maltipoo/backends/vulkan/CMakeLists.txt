@@ -17,8 +17,9 @@ add_library(
     VulkanShader.cpp
     VulkanCommandPool.cpp
     VulkanCommandList.cpp
-    VulkanRenderTarget.cpp
+    VulkanSwapchain.cpp
     GPU.cpp
     )
+
 target_include_directories(VulkanGPU PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(VulkanGPU Vulkan::Vulkan SDL2::SDL2 spirv-cross-cpp)

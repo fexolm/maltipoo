@@ -1,6 +1,7 @@
 #include "VulkanInstance.h"
+#include "Shared.h"
 
-VkInstance createInstance(const std::vector<const char*>& enabledExtensions)
+VkInstance createInstance(const std::vector<const char *> &enabledExtensions)
 {
 	VkApplicationInfo applicationInfo{};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -12,9 +13,8 @@ VkInstance createInstance(const std::vector<const char*>& enabledExtensions)
 	applicationInfo.pNext = nullptr;
 
 	// TODO: check extensions support
-	const std::vector<const char*> validationLayers = {
-		"VK_LAYER_KHRONOS_validation"
-	};
+	const std::vector<const char *> validationLayers = {
+		"VK_LAYER_KHRONOS_validation"};
 
 	VkInstanceCreateInfo instanceCreateInfo{};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -27,13 +27,13 @@ VkInstance createInstance(const std::vector<const char*>& enabledExtensions)
 	instanceCreateInfo.pNext = nullptr;
 
 	VkInstance result;
-	vkCreateInstance(&instanceCreateInfo, nullptr, &result);
+	VULKAN_GPU_SAFE_CALL(vkCreateInstance(&instanceCreateInfo, nullptr, &result));
 
 	return result;
 }
 
 VulkanInstance::VulkanInstance(
-	const std::vector<const char*>& enabledExtensions)
+	const std::vector<const char *> &enabledExtensions)
 {
 	instance = createInstance(enabledExtensions);
 }
@@ -43,7 +43,7 @@ VulkanInstance::~VulkanInstance()
 	vkDestroyInstance(instance, nullptr);
 }
 
-const VkInstance& VulkanInstance::Instance()
+const VkInstance &VulkanInstance::Instance()
 {
 	return instance;
 }

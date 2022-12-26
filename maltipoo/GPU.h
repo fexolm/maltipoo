@@ -92,12 +92,6 @@ struct GPUShader : GPUResource
 
 using GPUShaderRef = std::shared_ptr<GPUShader>;
 
-class GPURenderTarget
-{
-};
-
-using GPURenderTargetRef = std::shared_ptr<GPURenderTarget>;
-
 struct DepthStencilInfo
 {
 	bool depthTestEnable{false};
@@ -142,7 +136,7 @@ public:
 
 	virtual void BindPipeline(const GPUGraphicsPipelineRef &pipeline) = 0;
 
-	virtual void BeginRenderPass(const GPURenderTargetRef &renderTarget) = 0;
+	virtual void BeginRenderPass(const GPUTextureRef &renderTarget) = 0;
 
 	virtual void EndRenderPass() = 0;
 
@@ -183,7 +177,7 @@ public:
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) = 0;
 
-	virtual GPURenderTargetRef GetRenderTarget() = 0;
+	virtual GPUTextureRef GetRenderTarget() = 0;
 
 	virtual void EndFrame() = 0;
 

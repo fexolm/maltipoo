@@ -44,7 +44,7 @@ VulkanCommandPoolRef createCommandPool(VulkanDeviceRef device, uint32_t graphics
 	commandPoolCreateInfo.pNext = nullptr;
 
 	VkCommandPool commandPool;
-	vkCreateCommandPool(device->Device(), &commandPoolCreateInfo, nullptr, &commandPool);
+	VULKAN_GPU_SAFE_CALL(vkCreateCommandPool(device->Device(), &commandPoolCreateInfo, nullptr, &commandPool));
 
 	return VulkanCommandPoolRef(new VulkanCommandPool(device, commandPool));
 }
@@ -59,7 +59,7 @@ VkCommandBuffer createCommandBuffer(VkDevice device, VkCommandPool commandPool)
 	commandBufferAllocateInfo.pNext = nullptr;
 
 	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer);
+	VULKAN_GPU_SAFE_CALL(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer));
 	return commandBuffer;
 }
 
@@ -110,89 +110,23 @@ chooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities, uint32_t width, uint32_t
 	}
 }
 
-VkSwapchainKHR
-createSwapchain(VkSurfaceKHR surface, VkDevice device,
-				VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode,
-				VkSurfaceCapabilitiesKHR caps,
-				VkExtent2D extent, uint32_t graphicsFamilyIdx, uint32_t presentFamilyIdx)
-{
-	uint32_t imageCount = caps.minImageCount + 1;
-
-	VkSwapchainCreateInfoKHR swapchainCreateInfo{};
-	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	swapchainCreateInfo.surface = surface;
-	swapchainCreateInfo.minImageCount = imageCount;
-	swapchainCreateInfo.imageFormat = surfaceFormat.format;
-	swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-	swapchainCreateInfo.imageExtent = extent;
-	swapchainCreateInfo.imageArrayLayers = 1;
-	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	uint32_t queueFamilyIndices[] = {graphicsFamilyIdx, presentFamilyIdx};
-	if (graphicsFamilyIdx == presentFamilyIdx)
-	{
-		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		swapchainCreateInfo.queueFamilyIndexCount = 0;
-		swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-	}
-	else
-	{
-		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		swapchainCreateInfo.queueFamilyIndexCount = 2;
-		swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
-	}
-
-	swapchainCreateInfo.preTransform = caps.currentTransform;
-	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	swapchainCreateInfo.presentMode = presentMode;
-	swapchainCreateInfo.clipped = true;
-	swapchainCreateInfo.oldSwapchain = nullptr;
-	swapchainCreateInfo.flags = 0;
-	swapchainCreateInfo.pNext = nullptr;
-
-	VkSwapchainKHR swapchain;
-
-	vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain);
-	return swapchain;
-}
-
-std::vector<VkImageView>
-createSwapchainImageViews(VkSwapchainKHR swapchain, VkDevice device,
+std::vector<VulkanSwapchainImageViewRef>
+createSwapchainImageViews(VulkanSwapchainRef swapchain, VulkanDeviceRef device,
 						  VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent)
 {
 
 	uint32_t imagesCount = 0;
-	vkGetSwapchainImagesKHR(device, swapchain, &imagesCount, nullptr);
+	VULKAN_GPU_SAFE_CALL(vkGetSwapchainImagesKHR(device->Device(), swapchain->Swapchain(), &imagesCount, nullptr));
 
 	std::vector<VkImage> images(imagesCount);
 
-	vkGetSwapchainImagesKHR(device, swapchain, &imagesCount, images.data());
+	VULKAN_GPU_SAFE_CALL(vkGetSwapchainImagesKHR(device->Device(), swapchain->Swapchain(), &imagesCount, images.data()));
 
-	std::vector<VkImageView> imageViews;
+	std::vector<VulkanSwapchainImageViewRef> imageViews;
 
 	for (auto image : images)
 	{
-		VkImageViewCreateInfo imageViewCreateInfo{};
-		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageViewCreateInfo.image = image;
-		imageViewCreateInfo.format = surfaceFormat.format;
-		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-		imageViewCreateInfo.subresourceRange.levelCount = 1;
-		imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-		imageViewCreateInfo.subresourceRange.layerCount = 1;
-		imageViewCreateInfo.flags = 0;
-		imageViewCreateInfo.pNext = nullptr;
-
-		VkImageView imageView;
-
-		vkCreateImageView(device, &imageViewCreateInfo, nullptr, &imageView);
-
-		imageViews.emplace_back(imageView);
+		imageViews.emplace_back(new VulkanSwapchainImageView(device, swapchain, image, surfaceFormat, extent));
 	}
 	return imageViews;
 }
@@ -216,7 +150,7 @@ VulkanDescriptorPoolRef createDescriptorPool(VulkanDeviceRef device)
 
 	VkDescriptorPool descriptorPool;
 
-	vkCreateDescriptorPool(device->Device(), &createInfo, nullptr, &descriptorPool);
+	VULKAN_GPU_SAFE_CALL(vkCreateDescriptorPool(device->Device(), &createInfo, nullptr, &descriptorPool));
 
 	return VulkanDescriptorPoolRef(new VulkanDescriptorPool(device, descriptorPool));
 }
@@ -245,7 +179,7 @@ createImageImpl(VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_
 
 	VkImage image;
 
-	vkCreateImage(device->Device(), &imageInfo, nullptr, &image);
+	VULKAN_GPU_SAFE_CALL(vkCreateImage(device->Device(), &imageInfo, nullptr, &image));
 
 	VkMemoryRequirements memReq;
 	vkGetImageMemoryRequirements(device->Device(), image, &memReq);
@@ -257,9 +191,9 @@ createImageImpl(VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_
 	allocInfo.pNext = nullptr;
 
 	VkDeviceMemory memory;
-	vkAllocateMemory(device->Device(), &allocInfo, nullptr, &memory);
+	VULKAN_GPU_SAFE_CALL(vkAllocateMemory(device->Device(), &allocInfo, nullptr, &memory));
 
-	vkBindImageMemory(device->Device(), image, memory, 0);
+	VULKAN_GPU_SAFE_CALL(vkBindImageMemory(device->Device(), image, memory, 0));
 
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -275,7 +209,7 @@ createImageImpl(VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_
 	viewInfo.pNext = nullptr;
 
 	VkImageView imageView;
-	vkCreateImageView(device->Device(), &viewInfo, nullptr, &imageView);
+	VULKAN_GPU_SAFE_CALL(vkCreateImageView(device->Device(), &viewInfo, nullptr, &imageView));
 
 	return std::make_shared<VulkanImage>(device, image, memory, imageView);
 }
@@ -291,7 +225,7 @@ createDescriptorSetLayout(VkDevice device, const std::vector<VkDescriptorSetLayo
 	createInfo.pNext = nullptr;
 
 	VkDescriptorSetLayout descriptorSetLayout;
-	vkCreateDescriptorSetLayout(device, &createInfo, nullptr, &descriptorSetLayout);
+	VULKAN_GPU_SAFE_CALL(vkCreateDescriptorSetLayout(device, &createInfo, nullptr, &descriptorSetLayout));
 
 	return descriptorSetLayout;
 }
@@ -310,7 +244,7 @@ createPipelineLayout(VkDevice &device, const std::vector<VkDescriptorSetLayout> 
 
 	VkPipelineLayout pipelineLayout;
 
-	vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+	VULKAN_GPU_SAFE_CALL(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
 	return pipelineLayout;
 }
@@ -430,11 +364,11 @@ createDepthImage(VulkanGPU &gpu, VulkanDeviceRef device, VkPhysicalDevice physic
 	return image;
 }
 
-VulkanRenderPassRef VulkanGPU::CreateRenderPass(int imgIdx)
+VulkanRenderPassRef VulkanGPU::CreateRenderPass()
 {
-	if (renderPassCache.count(imgIdx))
+	if (renderPassCache.count(0))
 	{
-		return renderPassCache.at(imgIdx);
+		return renderPassCache.at(0);
 	}
 
 	VkAttachmentDescription colorAttachment{};
@@ -500,9 +434,9 @@ VulkanRenderPassRef VulkanGPU::CreateRenderPass(int imgIdx)
 
 	vkCreateRenderPass(device->Device(), &renderPassInfo, nullptr, &renderPass);
 
-	renderPassCache.emplace(imgIdx, VulkanRenderPassRef(new VulkanRenderPass(device, renderPass)));
+	renderPassCache.emplace(0, VulkanRenderPassRef(new VulkanRenderPass(device, renderPass)));
 
-	return renderPassCache.at(imgIdx);
+	return renderPassCache.at(0);
 }
 
 GPUGraphicsPipelineRef VulkanGPU::CreateGraphicsPipeline(const GraphicsPipelineCreateInfo &info)
@@ -512,15 +446,15 @@ GPUGraphicsPipelineRef VulkanGPU::CreateGraphicsPipeline(const GraphicsPipelineC
 }
 
 VkFramebuffer
-VulkanGPU::CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanRenderTarget &renderTarget)
+VulkanGPU::CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture &renderTarget)
 {
-	if (frameBuffersCache.count(renderTarget.imageIdx))
+	if (frameBuffersCache.count(currentSwapchainImgIdx))
 	{
-		return frameBuffersCache.at(renderTarget.imageIdx);
+		return frameBuffersCache.at(currentSwapchainImgIdx);
 	}
 
 	VkImageView attachments[] = {
-		renderTarget.swapchainImg, depthImage->view};
+		renderTarget.GetImageView(), depthImage->view};
 	VkFramebufferCreateInfo framebufferInfo{};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebufferInfo.renderPass = renderPass->RenderPass();
@@ -536,8 +470,8 @@ VulkanGPU::CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanRenderT
 
 	vkCreateFramebuffer(device->Device(), &framebufferInfo, nullptr, &framebuffer);
 
-	frameBuffersCache.emplace(renderTarget.imageIdx, framebuffer);
-	return frameBuffersCache.at(renderTarget.imageIdx);
+	frameBuffersCache.emplace(currentSwapchainImgIdx, framebuffer);
+	return frameBuffersCache.at(currentSwapchainImgIdx);
 }
 
 std::vector<VkSurfaceFormatKHR> getSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
@@ -586,10 +520,9 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device->PhysicalDevice(), surface, &caps);
 	extent = chooseSwapExtent(caps, width, height);
 
-	swapchain = createSwapchain(surface, device->Device(), surfaceFormat, presentMode, caps, extent,
-								device->GraphicsFamily(), device->PresentFamily());
+	swapchain = VulkanSwapchainRef(new VulkanSwapchain(device, surface, surfaceFormat, presentMode, caps, extent));
 
-	swapchainImageViews = createSwapchainImageViews(swapchain, device->Device(), surfaceFormat, extent);
+	swapchainImageViews = createSwapchainImageViews(swapchain, device, surfaceFormat, extent);
 
 	commandPool = createCommandPool(device, device->GraphicsFamily());
 
@@ -619,7 +552,7 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 	inFlightResources.erase(currentFrame);
 	vkResetFences(device->Device(), 1, &inFlightFences[currentFrame]);
 
-	vkAcquireNextImageKHR(device->Device(), swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
+	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
 }
 
 #include <iostream>
@@ -852,10 +785,9 @@ VkExtent2D VulkanGPU::GetExtent()
 	return extent;
 }
 
-GPURenderTargetRef VulkanGPU::GetRenderTarget()
+GPUTextureRef VulkanGPU::GetRenderTarget()
 {
-	return GPURenderTargetRef(
-		new VulkanRenderTarget{.swapchainImg = swapchainImageViews[currentSwapchainImgIdx], .imageIdx = currentSwapchainImgIdx});
+	return swapchainImageViews[currentSwapchainImgIdx];
 }
 
 void VulkanGPU::EndFrame()
@@ -863,7 +795,7 @@ void VulkanGPU::EndFrame()
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain;
+	presentInfo.pSwapchains = &swapchain->Swapchain();
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = &renderFinishedSemaphores[currentFrame];
 	presentInfo.pResults = nullptr;
@@ -878,7 +810,7 @@ void VulkanGPU::EndFrame()
 	inFlightResources.erase(currentFrame);
 	vkResetFences(device->Device(), 1, &inFlightFences[currentFrame]);
 
-	vkAcquireNextImageKHR(device->Device(), swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
+	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
 }
 
 GPUBufferRef VulkanGPU::CreateBuffer(size_t size, const BufferInfo &info)
@@ -994,13 +926,6 @@ VulkanGPU::~VulkanGPU()
 		vkDestroySemaphore(device->Device(), renderFinishedSemaphores[i], nullptr);
 		vkDestroyFence(device->Device(), inFlightFences[i], nullptr);
 	}
-
-	for (VkImageView view : swapchainImageViews)
-	{
-		vkDestroyImageView(device->Device(), view, nullptr);
-	}
-
-	vkDestroySwapchainKHR(device->Device(), swapchain, nullptr);
 
 	vkDestroySurfaceKHR(instance->Instance(), surface, nullptr);
 }

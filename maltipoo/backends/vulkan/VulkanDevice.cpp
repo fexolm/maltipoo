@@ -1,4 +1,5 @@
 #include "VulkanDevice.h"
+#include "Shared.h"
 
 VkPhysicalDevice choosePhysicalDevice(VkInstance instance)
 {
@@ -8,10 +9,12 @@ VkPhysicalDevice choosePhysicalDevice(VkInstance instance)
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 
 	vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data());
-	for (auto& device : physicalDevices) {
+	for (auto &device : physicalDevices)
+	{
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(device, &deviceProperties);
-		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		{
 			return device;
 		}
 	}
@@ -28,7 +31,7 @@ getQueueFamilyProperties(VkPhysicalDevice device)
 	std::vector<VkQueueFamilyProperties> families(propertiesCount);
 
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &propertiesCount,
-		families.data());
+											 families.data());
 
 	return families;
 }
@@ -36,8 +39,10 @@ getQueueFamilyProperties(VkPhysicalDevice device)
 uint32_t findGraphicsFamilyIdx(VkPhysicalDevice device)
 {
 	auto families = getQueueFamilyProperties(device);
-	for (uint32_t i = 0; i < families.size(); ++i) {
-		if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+	for (uint32_t i = 0; i < families.size(); ++i)
+	{
+		if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		{
 			return i;
 		}
 	}
@@ -47,12 +52,15 @@ uint32_t findGraphicsFamilyIdx(VkPhysicalDevice device)
 uint32_t findPresentFamilyIdx(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	auto families = getQueueFamilyProperties(device);
-	for (uint32_t i = 0; i < families.size(); ++i) {
-		if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+	for (uint32_t i = 0; i < families.size(); ++i)
+	{
+		if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		{
 			VkBool32 supportsSurface = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface,
-				&supportsSurface);
-			if (supportsSurface) {
+												 &supportsSurface);
+			if (supportsSurface)
+			{
 				return i;
 			}
 		}
@@ -61,8 +69,8 @@ uint32_t findPresentFamilyIdx(VkPhysicalDevice device, VkSurfaceKHR surface)
 }
 
 VkDevice createDevice(VkPhysicalDevice physicalDevice,
-	uint32_t graphicsFamilyIdx, uint32_t presentFamilyIdx,
-	const std::vector<const char*>& deviceExtensions)
+					  uint32_t graphicsFamilyIdx, uint32_t presentFamilyIdx,
+					  const std::vector<const char *> &deviceExtensions)
 {
 	float queuePriority = 1.0f;
 
@@ -75,7 +83,8 @@ VkDevice createDevice(VkPhysicalDevice physicalDevice,
 	queueCreateInfos.back().flags = 0;
 	queueCreateInfos.back().pNext = nullptr;
 
-	if (graphicsFamilyIdx != presentFamilyIdx) {
+	if (graphicsFamilyIdx != presentFamilyIdx)
+	{
 		queueCreateInfos.emplace_back();
 
 		queueCreateInfos.back().sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -100,21 +109,21 @@ VkDevice createDevice(VkPhysicalDevice physicalDevice,
 	deviceCreateInfo.pNext = nullptr;
 
 	VkDevice device;
-	vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
+	VULKAN_GPU_SAFE_CALL(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
 
 	return device;
 }
 
 VulkanDevice::VulkanDevice(VulkanInstanceRef instance,
-	const std::vector<const char*>& deviceExtensions,
-	VkSurfaceKHR surface)
+						   const std::vector<const char *> &deviceExtensions,
+						   VkSurfaceKHR surface)
 	: instance(instance)
 {
 	physicalDevice = choosePhysicalDevice(instance->Instance());
 	graphicsFamilyIdx = findGraphicsFamilyIdx(physicalDevice);
 	presentFamilyIdx = findPresentFamilyIdx(physicalDevice, surface);
 	device = createDevice(physicalDevice, graphicsFamilyIdx, presentFamilyIdx,
-		deviceExtensions);
+						  deviceExtensions);
 
 	vkGetDeviceQueue(device, graphicsFamilyIdx, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, presentFamilyIdx, 0, &presentQueue);
@@ -125,12 +134,12 @@ VulkanDevice::~VulkanDevice()
 	vkDestroyDevice(device, nullptr);
 }
 
-const VkDevice& VulkanDevice::Device()
+const VkDevice &VulkanDevice::Device()
 {
 	return device;
 }
 
-const VkPhysicalDevice& VulkanDevice::PhysicalDevice()
+const VkPhysicalDevice &VulkanDevice::PhysicalDevice()
 {
 	return physicalDevice;
 }
@@ -145,12 +154,12 @@ uint32_t VulkanDevice::PresentFamily()
 	return presentFamilyIdx;
 }
 
-const VkQueue& VulkanDevice::GraphicsQueue()
+const VkQueue &VulkanDevice::GraphicsQueue()
 {
 	return graphicsQueue;
 }
 
-const VkQueue& VulkanDevice::PresentQueue()
+const VkQueue &VulkanDevice::PresentQueue()
 {
 	return presentQueue;
 }

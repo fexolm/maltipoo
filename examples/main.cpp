@@ -85,7 +85,7 @@ int main()
         }
 
         GPUCommandListRef commandList = gpu->CreateCommandList();
-        GPURenderTargetRef renderTarget = gpu->GetRenderTarget();
+        GPUTextureRef renderTarget = gpu->GetRenderTarget();
 
         commandList->Begin();
         commandList->BeginRenderPass(renderTarget);

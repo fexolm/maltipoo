@@ -5,6 +5,11 @@ VulkanImage::VulkanImage(VulkanDeviceRef device, VkImage img, VkDeviceMemory mem
 {
 }
 
+const VkImageView &VulkanImage::GetImageView() const
+{
+	return view;
+}
+
 VulkanImage::~VulkanImage()
 {
 	vkDestroyImageView(device->Device(), view, nullptr);
