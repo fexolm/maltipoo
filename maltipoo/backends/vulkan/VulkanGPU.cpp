@@ -528,11 +528,6 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 
 	descriptorPool = createDescriptorPool(device);
 
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreInfo.flags = 0;
-	semaphoreInfo.pNext = nullptr;
-
 	VkFenceCreateInfo fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -540,8 +535,6 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		vkCreateSemaphore(device->Device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
-		vkCreateSemaphore(device->Device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
 		vkCreateFence(device->Device(), &fenceInfo, nullptr, &inFlightFences[i]);
 	}
 	currentFrame = 0;
@@ -551,11 +544,7 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 	vkWaitForFences(device->Device(), 1, &inFlightFences[currentFrame], true, UINT64_MAX);
 	inFlightResources.erase(currentFrame);
 	vkResetFences(device->Device(), 1, &inFlightFences[currentFrame]);
-
-	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
 }
-
-#include <iostream>
 
 static inline VkFormat toVkBufferFormat(VertexElementType Type)
 {
@@ -747,14 +736,16 @@ GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderTy
 	return res;
 }
 
-void VulkanGPU::Submit(GPUCommandListRef &commandList)
+GPUFutureRef VulkanGPU::Submit(GPUCommandListRef &commandList)
 {
+	VulkanFutureRef result = VulkanFutureRef(new VulkanFuture(device));
+
 	VulkanCommandList &vulkanCommandList = static_cast<VulkanCommandList &>(*commandList);
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &imageAvailableSemaphores[currentFrame];
+	submitInfo.waitSemaphoreCount = vulkanCommandList.waitSemaphores.size();
+	submitInfo.pWaitSemaphores = vulkanCommandList.waitSemaphores.data();
 
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 	submitInfo.pWaitDstStageMask = waitStages;
@@ -763,13 +754,16 @@ void VulkanGPU::Submit(GPUCommandListRef &commandList)
 	submitInfo.pCommandBuffers = &vulkanCommandList.commandBuffer;
 
 	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
+	submitInfo.pSignalSemaphores = &result->Semaphore();
 
 	submitInfo.pNext = nullptr;
 
 	vkQueueSubmit(device->GraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
 
 	inFlightResources.emplace(currentFrame, commandList);
+	inFlightResources.emplace(currentFrame, result);
+
+	return result;
 }
 
 GPUCommandListRef VulkanGPU::CreateCommandList()
@@ -785,32 +779,39 @@ VkExtent2D VulkanGPU::GetExtent()
 	return extent;
 }
 
-GPUTextureRef VulkanGPU::GetRenderTarget()
+std::pair<GPUTextureRef, GPUFutureRef> VulkanGPU::AquireFramebufferImage()
 {
-	return swapchainImageViews[currentSwapchainImgIdx];
+	VulkanFutureRef future = VulkanFutureRef(new VulkanFuture(device));
+	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, future->Semaphore(), nullptr, &currentSwapchainImgIdx);
+	return {swapchainImageViews[currentSwapchainImgIdx], future};
 }
 
-void VulkanGPU::EndFrame()
+void VulkanGPU::BeginFrame()
 {
-	VkPresentInfoKHR presentInfo{};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain->Swapchain();
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderFinishedSemaphores[currentFrame];
-	presentInfo.pResults = nullptr;
-	presentInfo.pImageIndices = &currentSwapchainImgIdx;
-	presentInfo.pNext = nullptr;
-
-	vkQueuePresentKHR(device->GraphicsQueue(), &presentInfo);
-
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	vkWaitForFences(device->Device(), 1, &inFlightFences[currentFrame], true, UINT64_MAX);
 	inFlightResources.erase(currentFrame);
 	vkResetFences(device->Device(), 1, &inFlightFences[currentFrame]);
+}
 
-	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], nullptr, &currentSwapchainImgIdx);
+void VulkanGPU::Present(GPUFutureRef renderFinished)
+{
+	inFlightResources.emplace(currentFrame, renderFinished);
+
+	VulkanFutureRef waitFuture = std::dynamic_pointer_cast<VulkanFuture>(renderFinished);
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &swapchain->Swapchain();
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &waitFuture->Semaphore();
+	presentInfo.pResults = nullptr;
+	presentInfo.pImageIndices = &currentSwapchainImgIdx;
+	presentInfo.pNext = nullptr;
+
+	vkQueuePresentKHR(device->GraphicsQueue(), &presentInfo);
 }
 
 GPUBufferRef VulkanGPU::CreateBuffer(size_t size, const BufferInfo &info)
@@ -915,6 +916,7 @@ void VulkanGPU::WaitIdle()
 
 VulkanGPU::~VulkanGPU()
 {
+	WaitIdle();
 	for (auto &p : frameBuffersCache)
 	{
 		vkDestroyFramebuffer(device->Device(), p.second, nullptr);
@@ -922,8 +924,6 @@ VulkanGPU::~VulkanGPU()
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		vkDestroySemaphore(device->Device(), imageAvailableSemaphores[i], nullptr);
-		vkDestroySemaphore(device->Device(), renderFinishedSemaphores[i], nullptr);
 		vkDestroyFence(device->Device(), inFlightFences[i], nullptr);
 	}
 

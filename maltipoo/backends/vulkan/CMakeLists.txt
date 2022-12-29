@@ -18,6 +18,7 @@ add_library(
     VulkanCommandPool.cpp
     VulkanCommandList.cpp
     VulkanSwapchain.cpp
+    VulkanFuture.cpp
     GPU.cpp
     )
 

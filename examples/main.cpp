@@ -84,11 +84,13 @@ int main()
             finished = true;
         }
 
+        gpu->BeginFrame();
+
         GPUCommandListRef commandList = gpu->CreateCommandList();
-        GPUTextureRef renderTarget = gpu->GetRenderTarget();
+        auto [renderTarget, future] = gpu->AquireFramebufferImage();
 
         commandList->Begin();
-        commandList->BeginRenderPass(renderTarget);
+        commandList->BeginRenderPass(renderTarget, future);
         commandList->BindPipeline(graphicsPipeline);
 
         commandList->SetViewport(200, 200, 800, 600);
@@ -103,8 +105,7 @@ int main()
         commandList->EndRenderPass();
         commandList->End();
 
-        gpu->Submit(commandList);
-        gpu->EndFrame();
+        gpu->Present(gpu->Submit(commandList));
     }
 
     SDL_DestroyWindow(window);

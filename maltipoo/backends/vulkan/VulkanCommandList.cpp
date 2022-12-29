@@ -27,9 +27,10 @@ void VulkanCommandList::End()
 	VULKAN_GPU_SAFE_CALL(vkEndCommandBuffer(commandBuffer));
 }
 
-void VulkanCommandList::BeginRenderPass(const GPUTextureRef &renderTarget)
+void VulkanCommandList::BeginRenderPass(const GPUTextureRef &renderTarget, GPUFutureRef waitFuture)
 {
 	VulkanTexture *vulkanRenderTarget = static_cast<VulkanTexture *>(renderTarget.get());
+	VulkanFuture *future = static_cast<VulkanFuture *>(waitFuture.get());
 
 	VulkanRenderPassRef renderPass = gpu->CreateRenderPass();
 	VkFramebuffer framebuffer = gpu->CreateFramebuffer(renderPass, *vulkanRenderTarget);
@@ -47,6 +48,9 @@ void VulkanCommandList::BeginRenderPass(const GPUTextureRef &renderTarget)
 	renderPassBeginInfo.clearValueCount = clearValues.size();
 	renderPassBeginInfo.pClearValues = clearValues.data();
 	renderPassBeginInfo.pNext = nullptr;
+
+	ownedResources.emplace_back(waitFuture);
+	waitSemaphores.emplace_back(future->Semaphore());
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }

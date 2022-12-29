@@ -12,6 +12,7 @@
 #include "VulkanSwapchain.h"
 #include "VulkanSampler.h"
 #include "VulkanShader.h"
+#include "VulkanFuture.h"
 
 #include <SDL2/SDL.h>
 #include <glm/vec2.hpp>
@@ -41,13 +42,13 @@ public:
 
 	virtual GPUCommandListRef CreateCommandList() override;
 
-	virtual void Submit(GPUCommandListRef &commandList) override;
+	virtual GPUFutureRef Submit(GPUCommandListRef &commandList) override;
 
 	virtual void WaitIdle() override;
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
 
-	virtual GPUTextureRef GetRenderTarget() override;
+	virtual std::pair<GPUTextureRef, GPUFutureRef> AquireFramebufferImage() override;
 
 	virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
 
@@ -55,7 +56,9 @@ public:
 
 	virtual void CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &texture, uint32_t width, uint32_t height) override;
 
-	virtual void EndFrame() override;
+	virtual void BeginFrame() override;
+
+	virtual void Present(GPUFutureRef renderFinished) override;
 
 	VulkanRenderPassRef CreateRenderPass();
 
@@ -83,8 +86,6 @@ private:
 
 	VulkanDescriptorPoolRef descriptorPool;
 
-	VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT];
-	VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];
 	VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
 
 	std::unordered_map<int, VkFramebuffer> frameBuffersCache;

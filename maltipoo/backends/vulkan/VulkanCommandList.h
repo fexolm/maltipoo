@@ -19,7 +19,7 @@ struct VulkanCommandList : public GPUCommandList
 
 	virtual void BindPipeline(const GPUGraphicsPipelineRef &pipeline) override;
 
-	virtual void BeginRenderPass(const GPUTextureRef &renderTarget) override;
+	virtual void BeginRenderPass(const GPUTextureRef &renderTarget, GPUFutureRef waitFuture) override;
 
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
 							 uint32_t firstInstance) override;
@@ -52,6 +52,8 @@ struct VulkanCommandList : public GPUCommandList
 	std::vector<VulkanDescriptorSetRef> currentDescriptorSets;
 
 	GPUGraphicsPipelineRef currentPipeline;
+
+	std::vector<VkSemaphore> waitSemaphores;
 };
 
 using VulkanCommandListRef = std::shared_ptr<VulkanCommandList>;
