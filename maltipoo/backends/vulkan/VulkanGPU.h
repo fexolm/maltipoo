@@ -42,13 +42,13 @@ public:
 
 	virtual GPUCommandListRef CreateCommandList() override;
 
-	virtual GPUFutureRef Submit(GPUCommandListRef &commandList) override;
+	virtual GPUFutureRef<> Submit(GPUCommandListRef &commandList) override;
 
 	virtual void WaitIdle() override;
 
 	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
 
-	virtual std::pair<GPUTextureRef, GPUFutureRef> AquireFramebufferImage() override;
+	virtual GPUFutureRef<GPUTexture> AquireFramebufferImage() override;
 
 	virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
 
@@ -58,7 +58,7 @@ public:
 
 	virtual void BeginFrame() override;
 
-	virtual void Present(GPUFutureRef renderFinished) override;
+	virtual void Present(GPUFutureRef<> renderFinished) override;
 
 	VulkanRenderPassRef CreateRenderPass();
 

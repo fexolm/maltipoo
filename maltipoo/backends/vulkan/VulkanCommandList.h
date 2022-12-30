@@ -19,7 +19,7 @@ struct VulkanCommandList : public GPUCommandList
 
 	virtual void BindPipeline(const GPUGraphicsPipelineRef &pipeline) override;
 
-	virtual void BeginRenderPass(const GPUTextureRef &renderTarget, GPUFutureRef waitFuture) override;
+	virtual void BeginRenderPass(GPUFutureRef<GPUTexture> renderTarget) override;
 
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
 							 uint32_t firstInstance) override;

@@ -14,10 +14,8 @@ findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPro
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
-	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-	{
-		if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-		{
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 			return i;
 		}
 	}
@@ -25,11 +23,10 @@ findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPro
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-VkSurfaceKHR createSurface(VkInstance instance, SDL_Window *window)
+VkSurfaceKHR createSurface(VkInstance instance, SDL_Window* window)
 {
 	VkSurfaceKHR surface;
-	if (!SDL_Vulkan_CreateSurface(window, instance, (SDL_vulkanSurface *)&surface))
-	{
+	if (!SDL_Vulkan_CreateSurface(window, instance, (SDL_vulkanSurface*)&surface)) {
 		throw;
 	}
 	return surface;
@@ -63,12 +60,10 @@ VkCommandBuffer createCommandBuffer(VkDevice device, VkCommandPool commandPool)
 	return commandBuffer;
 }
 
-VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
+VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
-	for (const auto &availableFormat : availableFormats)
-	{
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-		{
+	for (const auto& availableFormat : availableFormats) {
+		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 			return availableFormat;
 		}
 	}
@@ -76,12 +71,10 @@ VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>
 	return availableFormats[0];
 }
 
-VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
+VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
-	for (const auto &availablePresentMode : availablePresentModes)
-	{
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-		{
+	for (const auto& availablePresentMode : availablePresentModes) {
+		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
 			return availablePresentMode;
 		}
 	}
@@ -92,19 +85,16 @@ VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &avai
 VkExtent2D
 chooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities, uint32_t width, uint32_t height)
 {
-	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-	{
+	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
 		return capabilities.currentExtent;
-	}
-	else
-	{
+	} else {
 
-		VkExtent2D actualExtent = {width, height};
+		VkExtent2D actualExtent = { width, height };
 
 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width,
-										capabilities.maxImageExtent.width);
+			capabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height,
-										 capabilities.maxImageExtent.height);
+			capabilities.maxImageExtent.height);
 
 		return actualExtent;
 	}
@@ -112,7 +102,7 @@ chooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities, uint32_t width, uint32_t
 
 std::vector<VulkanSwapchainImageViewRef>
 createSwapchainImageViews(VulkanSwapchainRef swapchain, VulkanDeviceRef device,
-						  VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent)
+	VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent)
 {
 
 	uint32_t imagesCount = 0;
@@ -124,8 +114,7 @@ createSwapchainImageViews(VulkanSwapchainRef swapchain, VulkanDeviceRef device,
 
 	std::vector<VulkanSwapchainImageViewRef> imageViews;
 
-	for (auto image : images)
-	{
+	for (auto image : images) {
 		imageViews.emplace_back(new VulkanSwapchainImageView(device, swapchain, image, surfaceFormat, extent));
 	}
 	return imageViews;
@@ -157,8 +146,8 @@ VulkanDescriptorPoolRef createDescriptorPool(VulkanDeviceRef device)
 
 VulkanImageRef
 createImageImpl(VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_t width, uint32_t height,
-				VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-				VkMemoryPropertyFlags memoryPorperties, VkImageAspectFlagBits aspectMask)
+	VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+	VkMemoryPropertyFlags memoryPorperties, VkImageAspectFlagBits aspectMask)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -215,7 +204,7 @@ createImageImpl(VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_
 }
 
 VkDescriptorSetLayout
-createDescriptorSetLayout(VkDevice device, const std::vector<VkDescriptorSetLayoutBinding> &bindings)
+createDescriptorSetLayout(VkDevice device, const std::vector<VkDescriptorSetLayoutBinding>& bindings)
 {
 	VkDescriptorSetLayoutCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -231,7 +220,7 @@ createDescriptorSetLayout(VkDevice device, const std::vector<VkDescriptorSetLayo
 }
 
 VkPipelineLayout
-createPipelineLayout(VkDevice &device, const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts)
+createPipelineLayout(VkDevice& device, const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -254,11 +243,11 @@ bool hasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void transitionImageLayout(VulkanGPU &gpu, VkImage img, VkFormat format, VkImageLayout oldLayout,
-						   VkImageLayout newLayout)
+void transitionImageLayout(VulkanGPU& gpu, VkImage img, VkFormat format, VkImageLayout oldLayout,
+	VkImageLayout newLayout)
 {
 	auto cmdList = gpu.CreateCommandList();
-	VulkanCommandList &vulkanCommandList = static_cast<VulkanCommandList &>(*cmdList);
+	VulkanCommandList& vulkanCommandList = static_cast<VulkanCommandList&>(*cmdList);
 	vulkanCommandList.Begin();
 
 	VkPipelineStageFlags sourceStage;
@@ -276,44 +265,33 @@ void transitionImageLayout(VulkanGPU &gpu, VkImage img, VkFormat format, VkImage
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
 
-	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
+	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (hasStencilComponent(format))
-		{
+		if (hasStencilComponent(format)) {
 			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
-	}
-	else
-	{
+	} else {
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_NONE;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
+	} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
+	} else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_NONE;
 		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-	else
-	{
+	} else {
 		throw std::invalid_argument("unsupported layout transition!");
 	}
 
@@ -325,20 +303,16 @@ void transitionImageLayout(VulkanGPU &gpu, VkImage img, VkFormat format, VkImage
 	gpu.SubmitAndWaitIdle(cmdList);
 }
 
-VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat> &candidates,
-							 VkImageTiling tiling, VkFormatFeatureFlagBits features)
+VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates,
+	VkImageTiling tiling, VkFormatFeatureFlagBits features)
 {
-	for (VkFormat format : candidates)
-	{
+	for (VkFormat format : candidates) {
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
-		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
-		{
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
 			return format;
-		}
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
-		{
+		} else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
 			return format;
 		}
 	}
@@ -348,17 +322,17 @@ VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<
 VkFormat findDepthFormat(VkPhysicalDevice physicalDevice)
 {
 	return findSupportedFormat(physicalDevice,
-							   {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-							   VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
 VulkanImageRef
-createDepthImage(VulkanGPU &gpu, VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_t width,
-				 uint32_t height)
+createDepthImage(VulkanGPU& gpu, VulkanDeviceRef device, VkPhysicalDevice physicalDevice, uint32_t width,
+	uint32_t height)
 {
 	VkFormat depthFormat = findDepthFormat(physicalDevice);
 	VulkanImageRef image = createImageImpl(device, physicalDevice, width, height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-										   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	transitionImageLayout(gpu, image->image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	return image;
@@ -366,8 +340,7 @@ createDepthImage(VulkanGPU &gpu, VulkanDeviceRef device, VkPhysicalDevice physic
 
 VulkanRenderPassRef VulkanGPU::CreateRenderPass()
 {
-	if (renderPassCache.count(0))
-	{
+	if (renderPassCache.count(0)) {
 		return renderPassCache.at(0);
 	}
 
@@ -418,7 +391,7 @@ VulkanRenderPassRef VulkanGPU::CreateRenderPass()
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-	std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = attachments.size();
@@ -439,22 +412,22 @@ VulkanRenderPassRef VulkanGPU::CreateRenderPass()
 	return renderPassCache.at(0);
 }
 
-GPUGraphicsPipelineRef VulkanGPU::CreateGraphicsPipeline(const GraphicsPipelineCreateInfo &info)
+GPUGraphicsPipelineRef VulkanGPU::CreateGraphicsPipeline(const GraphicsPipelineCreateInfo& info)
 {
 	return GPUGraphicsPipelineRef(
 		new VulkanGraphicsPipeline(device, extent, surfaceFormat.format, findDepthFormat(device->PhysicalDevice()), info));
 }
 
 VkFramebuffer
-VulkanGPU::CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture &renderTarget)
+VulkanGPU::CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture& renderTarget)
 {
-	if (frameBuffersCache.count(currentSwapchainImgIdx))
-	{
+	if (frameBuffersCache.count(currentSwapchainImgIdx)) {
 		return frameBuffersCache.at(currentSwapchainImgIdx);
 	}
 
 	VkImageView attachments[] = {
-		renderTarget.GetImageView(), depthImage->view};
+		renderTarget.GetImageView(), depthImage->view
+	};
 	VkFramebufferCreateInfo framebufferInfo{};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebufferInfo.renderPass = renderPass->RenderPass();
@@ -497,16 +470,17 @@ std::vector<VkPresentModeKHR> getSurfacePresentModes(VkPhysicalDevice physicalDe
 	return presentModes;
 }
 
-VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
+VulkanGPU::VulkanGPU(SDL_Window* window, int width, int height)
 {
 	uint32_t extensionsCount;
 	SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, nullptr);
 	SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, nullptr);
-	std::vector<const char *> enabledExtensions(extensionsCount);
+	std::vector<const char*> enabledExtensions(extensionsCount);
 	SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, enabledExtensions.data());
 
-	const std::vector<const char *> deviceExtensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+	const std::vector<const char*> deviceExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 
 	instance = VulkanInstanceRef(new VulkanInstance(enabledExtensions));
 
@@ -533,8 +507,7 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	fenceInfo.pNext = nullptr;
 
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkCreateFence(device->Device(), &fenceInfo, nullptr, &inFlightFences[i]);
 	}
 	currentFrame = 0;
@@ -548,50 +521,49 @@ VulkanGPU::VulkanGPU(SDL_Window *window, int width, int height)
 
 static inline VkFormat toVkBufferFormat(VertexElementType Type)
 {
-	switch (Type)
-	{
-	case Float1:
-		return VK_FORMAT_R32_SFLOAT;
-	case Float2:
-		return VK_FORMAT_R32G32_SFLOAT;
-	case Float3:
-		return VK_FORMAT_R32G32B32_SFLOAT;
-	case PackedNormal:
-		return VK_FORMAT_R8G8B8A8_SNORM;
-	case UByte4:
-		return VK_FORMAT_R8G8B8A8_UINT;
-	case UByte4N:
-		return VK_FORMAT_R8G8B8A8_UNORM;
-	case Color:
-		return VK_FORMAT_B8G8R8A8_UNORM;
-	case Short2:
-		return VK_FORMAT_R16G16_SINT;
-	case Short4:
-		return VK_FORMAT_R16G16B16A16_SINT;
-	case Short2N:
-		return VK_FORMAT_R16G16_SNORM;
-	case Half2:
-		return VK_FORMAT_R16G16_SFLOAT;
-	case Half4:
-		return VK_FORMAT_R16G16B16A16_SFLOAT;
-	case Short4N: // 4 X 16 bit word: normalized
-		return VK_FORMAT_R16G16B16A16_SNORM;
-	case UShort2:
-		return VK_FORMAT_R16G16_UINT;
-	case UShort4:
-		return VK_FORMAT_R16G16B16A16_UINT;
-	case UShort2N: // 16 bit word normalized to (value/65535.0:value/65535.0:0:0:1)
-		return VK_FORMAT_R16G16_UNORM;
-	case UShort4N: // 4 X 16 bit word unsigned: normalized
-		return VK_FORMAT_R16G16B16A16_UNORM;
-	case Float4:
-		return VK_FORMAT_R32G32B32A32_SFLOAT;
-	case URGB10A2N:
-		return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
-	case UInt:
-		return VK_FORMAT_R32_UINT;
-	default:
-		break;
+	switch (Type) {
+		case Float1:
+			return VK_FORMAT_R32_SFLOAT;
+		case Float2:
+			return VK_FORMAT_R32G32_SFLOAT;
+		case Float3:
+			return VK_FORMAT_R32G32B32_SFLOAT;
+		case PackedNormal:
+			return VK_FORMAT_R8G8B8A8_SNORM;
+		case UByte4:
+			return VK_FORMAT_R8G8B8A8_UINT;
+		case UByte4N:
+			return VK_FORMAT_R8G8B8A8_UNORM;
+		case Color:
+			return VK_FORMAT_B8G8R8A8_UNORM;
+		case Short2:
+			return VK_FORMAT_R16G16_SINT;
+		case Short4:
+			return VK_FORMAT_R16G16B16A16_SINT;
+		case Short2N:
+			return VK_FORMAT_R16G16_SNORM;
+		case Half2:
+			return VK_FORMAT_R16G16_SFLOAT;
+		case Half4:
+			return VK_FORMAT_R16G16B16A16_SFLOAT;
+		case Short4N: // 4 X 16 bit word: normalized
+			return VK_FORMAT_R16G16B16A16_SNORM;
+		case UShort2:
+			return VK_FORMAT_R16G16_UINT;
+		case UShort4:
+			return VK_FORMAT_R16G16B16A16_UINT;
+		case UShort2N: // 16 bit word normalized to (value/65535.0:value/65535.0:0:0:1)
+			return VK_FORMAT_R16G16_UNORM;
+		case UShort4N: // 4 X 16 bit word unsigned: normalized
+			return VK_FORMAT_R16G16B16A16_UNORM;
+		case Float4:
+			return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case URGB10A2N:
+			return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+		case UInt:
+			return VK_FORMAT_R32_UINT;
+		default:
+			break;
 	}
 
 	throw std::runtime_error("Undefined vertex-element format conversion");
@@ -599,48 +571,42 @@ static inline VkFormat toVkBufferFormat(VertexElementType Type)
 
 uint32_t getTypeSize(VertexElementType type)
 {
-	switch (type)
-	{
-	case VertexElementType::Float1:
-		return 4;
-	case VertexElementType::Float2:
-		return 8;
-	case VertexElementType::Float3:
-		return 12;
-	case VertexElementType::Float4:
-		return 16;
-	case VertexElementType::Color:
-		return 4;
-	default:
-		throw std::runtime_error("Unsuported type");
+	switch (type) {
+		case VertexElementType::Float1:
+			return 4;
+		case VertexElementType::Float2:
+			return 8;
+		case VertexElementType::Float3:
+			return 12;
+		case VertexElementType::Float4:
+			return 16;
+		case VertexElementType::Color:
+			return 4;
+		default:
+			throw std::runtime_error("Unsuported type");
 	}
 }
 
 VertexElementType spirvToVertexElementType(spirv_cross::SPIRType type)
 {
-	if (type.basetype == spirv_cross::SPIRType::Float)
-	{
-		if (type.vecsize == 1)
-		{
+	if (type.basetype == spirv_cross::SPIRType::Float) {
+		if (type.vecsize == 1) {
 			return VertexElementType::Float1;
 		}
-		if (type.vecsize == 2)
-		{
+		if (type.vecsize == 2) {
 			return VertexElementType::Float2;
 		}
-		if (type.vecsize == 3)
-		{
+		if (type.vecsize == 3) {
 			return VertexElementType::Float3;
 		}
-		if (type.vecsize == 4)
-		{
+		if (type.vecsize == 4) {
 			return VertexElementType::Color;
 		}
 	}
 	return VertexElementType::None;
 }
 
-GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderType type)
+GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t>& code, ShaderType type)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -659,11 +625,9 @@ GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderTy
 
 	auto res = std::make_shared<VulkanShader>(device, shaderModule);
 
-	if (type == ShaderType::Vertex)
-	{
+	if (type == ShaderType::Vertex) {
 		int i = 0;
-		for (auto &b : resources.stage_inputs)
-		{
+		for (auto& b : resources.stage_inputs) {
 			VkVertexInputAttributeDescription attributeDescription{};
 			attributeDescription.binding = i;
 			attributeDescription.location = comp.get_decoration(b.id, spv::DecorationLocation);
@@ -683,51 +647,47 @@ GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderTy
 		}
 	}
 
-	for (auto &ub : resources.uniform_buffers)
-	{
+	for (auto& ub : resources.uniform_buffers) {
 		int binding = comp.get_decoration(ub.id, spv::DecorationBinding);
 		int set = comp.get_decoration(ub.id, spv::DecorationDescriptorSet);
 
-		res->params[ub.name] = {set, binding};
+		res->params[ub.name] = { set, binding };
 
 		VkDescriptorSetLayoutBinding layoutBinding{};
 		layoutBinding.binding = binding;
 		layoutBinding.descriptorCount = 1;
 		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		switch (type)
-		{
-		case ShaderType::Vertex:
-			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-			break;
-		case ShaderType::Fragment:
-			layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			break;
+		switch (type) {
+			case ShaderType::Vertex:
+				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				break;
+			case ShaderType::Fragment:
+				layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+				break;
 		}
 		layoutBinding.pImmutableSamplers = nullptr;
 
 		res->bindings[set].push_back(layoutBinding);
 	}
 
-	for (auto &ub : resources.sampled_images)
-	{
+	for (auto& ub : resources.sampled_images) {
 		int binding = comp.get_decoration(ub.id, spv::DecorationBinding);
 		int set = comp.get_decoration(ub.id, spv::DecorationDescriptorSet);
 
-		res->params[ub.name] = {set, binding};
+		res->params[ub.name] = { set, binding };
 
 		VkDescriptorSetLayoutBinding layoutBinding{};
 		layoutBinding.binding = binding;
 		layoutBinding.descriptorCount = 1;
 		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
-		switch (type)
-		{
-		case ShaderType::Vertex:
-			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-			break;
-		case ShaderType::Fragment:
-			layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			break;
+		switch (type) {
+			case ShaderType::Vertex:
+				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				break;
+			case ShaderType::Fragment:
+				layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+				break;
 		}
 		layoutBinding.pImmutableSamplers = nullptr;
 		res->bindings[set].push_back(layoutBinding);
@@ -736,18 +696,18 @@ GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderTy
 	return res;
 }
 
-GPUFutureRef VulkanGPU::Submit(GPUCommandListRef &commandList)
+GPUFutureRef<> VulkanGPU::Submit(GPUCommandListRef& commandList)
 {
-	VulkanFutureRef result = VulkanFutureRef(new VulkanFuture(device));
+	VulkanFutureRef<> result = VulkanFutureRef<>(new VulkanFuture<void>(device));
 
-	VulkanCommandList &vulkanCommandList = static_cast<VulkanCommandList &>(*commandList);
+	VulkanCommandList& vulkanCommandList = static_cast<VulkanCommandList&>(*commandList);
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 	submitInfo.waitSemaphoreCount = vulkanCommandList.waitSemaphores.size();
 	submitInfo.pWaitSemaphores = vulkanCommandList.waitSemaphores.data();
 
-	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.pWaitDstStageMask = waitStages;
 
 	submitInfo.commandBufferCount = 1;
@@ -779,11 +739,12 @@ VkExtent2D VulkanGPU::GetExtent()
 	return extent;
 }
 
-std::pair<GPUTextureRef, GPUFutureRef> VulkanGPU::AquireFramebufferImage()
+GPUFutureRef<GPUTexture> VulkanGPU::AquireFramebufferImage()
 {
-	VulkanFutureRef future = VulkanFutureRef(new VulkanFuture(device));
+	VulkanFutureRef<GPUTexture> future = VulkanFutureRef<GPUTexture>(new VulkanFuture<GPUTexture>(device));
 	vkAcquireNextImageKHR(device->Device(), swapchain->Swapchain(), UINT64_MAX, future->Semaphore(), nullptr, &currentSwapchainImgIdx);
-	return {swapchainImageViews[currentSwapchainImgIdx], future};
+	**future = swapchainImageViews[currentSwapchainImgIdx];
+	return future;
 }
 
 void VulkanGPU::BeginFrame()
@@ -795,11 +756,11 @@ void VulkanGPU::BeginFrame()
 	vkResetFences(device->Device(), 1, &inFlightFences[currentFrame]);
 }
 
-void VulkanGPU::Present(GPUFutureRef renderFinished)
+void VulkanGPU::Present(GPUFutureRef<> renderFinished)
 {
 	inFlightResources.emplace(currentFrame, renderFinished);
 
-	VulkanFutureRef waitFuture = std::dynamic_pointer_cast<VulkanFuture>(renderFinished);
+	VulkanFutureRef<> waitFuture = std::dynamic_pointer_cast<VulkanFuture<void>>(renderFinished);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -814,14 +775,14 @@ void VulkanGPU::Present(GPUFutureRef renderFinished)
 	vkQueuePresentKHR(device->GraphicsQueue(), &presentInfo);
 }
 
-GPUBufferRef VulkanGPU::CreateBuffer(size_t size, const BufferInfo &info)
+GPUBufferRef VulkanGPU::CreateBuffer(size_t size, const BufferInfo& info)
 {
 	return GPUBufferRef(new VulkanBuffer(device, device->PhysicalDevice(), size, info));
 }
 
-VulkanDescriptorSetRef VulkanGPU::CreateDescriptorSet(const GPUGraphicsPipelineRef &pipeline, int num)
+VulkanDescriptorSetRef VulkanGPU::CreateDescriptorSet(const GPUGraphicsPipelineRef& pipeline, int num)
 {
-	VulkanGraphicsPipeline *vulkanPipeline = static_cast<VulkanGraphicsPipeline *>(pipeline.get());
+	VulkanGraphicsPipeline* vulkanPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline.get());
 	VkDescriptorSetLayout layout = vulkanPipeline->DescriptorLayouts()[num];
 	return VulkanDescriptorSetRef(new VulkanDescriptorSet(device, descriptorPool, &layout));
 }
@@ -829,18 +790,18 @@ VulkanDescriptorSetRef VulkanGPU::CreateDescriptorSet(const GPUGraphicsPipelineR
 GPUTextureRef VulkanGPU::CreateTexture(uint32_t width, uint32_t height)
 {
 	return createImageImpl(device, device->PhysicalDevice(), width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-						   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void VulkanGPU::CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &texture, uint32_t width, uint32_t height)
+void VulkanGPU::CopyBufferToTexture(const GPUBufferRef& buf, GPUTextureRef& texture, uint32_t width, uint32_t height)
 {
-	VulkanBuffer *buffer = static_cast<VulkanBuffer *>(buf.get());
-	VulkanImage *image = static_cast<VulkanImage *>(texture.get());
+	VulkanBuffer* buffer = static_cast<VulkanBuffer*>(buf.get());
+	VulkanImage* image = static_cast<VulkanImage*>(texture.get());
 	transitionImageLayout(*this, image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	auto cmdList = CreateCommandList();
 
-	VulkanCommandList &vulkanCommmandList = static_cast<VulkanCommandList &>(*cmdList);
+	VulkanCommandList& vulkanCommmandList = static_cast<VulkanCommandList&>(*cmdList);
 	vulkanCommmandList.Begin();
 
 	VkBufferImageCopy region;
@@ -852,8 +813,8 @@ void VulkanGPU::CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &text
 	region.imageSubresource.baseArrayLayer = 0;
 	region.imageSubresource.layerCount = 1;
 
-	region.imageOffset = {0, 0, 0};
-	region.imageExtent = {width, height, 1};
+	region.imageOffset = { 0, 0, 0 };
+	region.imageExtent = { width, height, 1 };
 
 	vkCmdCopyBufferToImage(vulkanCommmandList.commandBuffer, buffer->Buffer(), image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -863,9 +824,9 @@ void VulkanGPU::CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &text
 	transitionImageLayout(*this, image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-void VulkanGPU::SubmitAndWaitIdle(GPUCommandListRef &commandList)
+void VulkanGPU::SubmitAndWaitIdle(GPUCommandListRef& commandList)
 {
-	VulkanCommandList &vulkanCommmandList = static_cast<VulkanCommandList &>(*commandList);
+	VulkanCommandList& vulkanCommmandList = static_cast<VulkanCommandList&>(*commandList);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -917,13 +878,11 @@ void VulkanGPU::WaitIdle()
 VulkanGPU::~VulkanGPU()
 {
 	WaitIdle();
-	for (auto &p : frameBuffersCache)
-	{
+	for (auto& p : frameBuffersCache) {
 		vkDestroyFramebuffer(device->Device(), p.second, nullptr);
 	}
 
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroyFence(device->Device(), inFlightFences[i], nullptr);
 	}
 
