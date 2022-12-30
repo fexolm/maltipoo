@@ -12,28 +12,27 @@
 
 const int FRAMES_IN_FLIGHT = 3;
 
-class VulkanGraphicsPipeline : public GPUGraphicsPipeline
-{
-public:
-	VulkanGraphicsPipeline(VulkanDeviceRef device, VkExtent2D extent, VkFormat surfaceFormat, VkFormat depthFormat,
-						   const GraphicsPipelineCreateInfo &info);
+class VulkanGraphicsPipeline : public GPUGraphicsPipeline {
+  public:
+    VulkanGraphicsPipeline(VulkanDeviceRef device, VkExtent2D extent, VkFormat surfaceFormat, VkFormat depthFormat,
+                           const GraphicsPipelineCreateInfo &info);
 
-	virtual ~VulkanGraphicsPipeline();
+    virtual ~VulkanGraphicsPipeline();
 
-	const std::vector<VkDescriptorSetLayout> &DescriptorLayouts() const;
+    const std::vector<VkDescriptorSetLayout> &DescriptorLayouts() const;
 
-	VkPipeline PipelineHandle() const;
+    VkPipeline PipelineHandle() const;
 
-	VkPipelineLayout LayoutHandle() const;
+    VkPipelineLayout LayoutHandle() const;
 
-	std::unordered_map<std::string, DescriptorSetBindingPoint> params;
+    std::unordered_map<std::string, DescriptorSetBindingPoint> params;
 
-private:
-	VulkanDeviceRef device;
+  private:
+    VulkanDeviceRef device;
 
-	VkPipelineLayout layoutHandle;
-	VkPipeline pipelineHandle;
+    VkPipelineLayout layoutHandle;
+    VkPipeline pipelineHandle;
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
-	std::vector<GPUShaderRef> shaders;
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    std::vector<GPUShaderRef> shaders;
 };

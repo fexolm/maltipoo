@@ -5,18 +5,17 @@
 
 #include "VulkanDevice.h"
 
-class VulkanDescriptorPool
-{
-public:
-	VulkanDescriptorPool(VulkanDeviceRef device, VkDescriptorPool descriptorPool);
+class VulkanDescriptorPool {
+  public:
+    VulkanDescriptorPool(VulkanDeviceRef device, VkDescriptorPool descriptorPool);
 
-	virtual ~VulkanDescriptorPool();
+    virtual ~VulkanDescriptorPool();
 
-	VkDescriptorPool Handle();
+    VkDescriptorPool Handle();
 
-private:
-	VulkanDeviceRef device;
-	VkDescriptorPool descriptorPool;
+  private:
+    VulkanDeviceRef device;
+    VkDescriptorPool descriptorPool;
 };
 
 using VulkanDescriptorPoolRef = std::shared_ptr<VulkanDescriptorPool>;

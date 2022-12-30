@@ -4,18 +4,17 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanCommandPool
-{
-public:
-	VulkanCommandPool(VulkanDeviceRef device, VkCommandPool commandPool);
+class VulkanCommandPool {
+  public:
+    VulkanCommandPool(VulkanDeviceRef device, VkCommandPool commandPool);
 
-	const VkCommandPool& CommandPool();
+    const VkCommandPool &CommandPool();
 
-	~VulkanCommandPool();
+    ~VulkanCommandPool();
 
-private:
-	VulkanDeviceRef device;
-	VkCommandPool commandPool;
+  private:
+    VulkanDeviceRef device;
+    VkCommandPool commandPool;
 };
 
 using VulkanCommandPoolRef = std::shared_ptr<VulkanCommandPool>;

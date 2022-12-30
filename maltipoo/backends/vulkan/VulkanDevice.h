@@ -6,35 +6,34 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-class VulkanDevice
-{
-public:
-	VulkanDevice(VulkanInstanceRef instance,
-		const std::vector<const char*>& deviceExtensions,
-		VkSurfaceKHR surface);
+class VulkanDevice {
+  public:
+    VulkanDevice(VulkanInstanceRef instance,
+                 const std::vector<const char *> &deviceExtensions,
+                 VkSurfaceKHR surface);
 
-	virtual ~VulkanDevice();
+    virtual ~VulkanDevice();
 
-	const VkDevice& Device();
+    const VkDevice &Device();
 
-	const VkPhysicalDevice& PhysicalDevice();
+    const VkPhysicalDevice &PhysicalDevice();
 
-	uint32_t GraphicsFamily();
+    uint32_t GraphicsFamily();
 
-	uint32_t PresentFamily();
+    uint32_t PresentFamily();
 
-	const VkQueue& GraphicsQueue();
+    const VkQueue &GraphicsQueue();
 
-	const VkQueue& PresentQueue();
+    const VkQueue &PresentQueue();
 
-private:
-	VulkanInstanceRef instance;
-	VkDevice device;
-	VkPhysicalDevice physicalDevice;
-	uint32_t graphicsFamilyIdx;
-	uint32_t presentFamilyIdx;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
+  private:
+    VulkanInstanceRef instance;
+    VkDevice device;
+    VkPhysicalDevice physicalDevice;
+    uint32_t graphicsFamilyIdx;
+    uint32_t presentFamilyIdx;
+    VkQueue graphicsQueue;
+    VkQueue presentQueue;
 };
 
 using VulkanDeviceRef = std::shared_ptr<VulkanDevice>;

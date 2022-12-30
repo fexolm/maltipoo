@@ -4,19 +4,18 @@
 
 #include <vulkan/vulkan.h>
 
-class VulkanRenderPass
-{
-public:
-	VulkanRenderPass(VulkanDeviceRef device, VkRenderPass renderPass);
+class VulkanRenderPass {
+  public:
+    VulkanRenderPass(VulkanDeviceRef device, VkRenderPass renderPass);
 
-	const VkRenderPass& RenderPass();
+    const VkRenderPass &RenderPass();
 
-	~VulkanRenderPass();
+    ~VulkanRenderPass();
 
-private:
-	VulkanDeviceRef device;
+  private:
+    VulkanDeviceRef device;
 
-	VkRenderPass renderPass;
+    VkRenderPass renderPass;
 };
 
 using VulkanRenderPassRef = std::shared_ptr<VulkanRenderPass>;

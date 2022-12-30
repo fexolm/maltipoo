@@ -2,8 +2,7 @@
 #include "Shared.h"
 
 VulkanSwapchain::VulkanSwapchain(VulkanDeviceRef device, VkSurfaceKHR surface, VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode, VkSurfaceCapabilitiesKHR caps, VkExtent2D extent)
-    : device(device)
-{
+    : device(device) {
     uint32_t imageCount = caps.minImageCount + 1;
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
@@ -16,14 +15,11 @@ VulkanSwapchain::VulkanSwapchain(VulkanDeviceRef device, VkSurfaceKHR surface, V
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     uint32_t queueFamilyIndices[] = {device->GraphicsFamily(), device->PresentFamily()};
-    if (device->GraphicsFamily() == device->PresentFamily())
-    {
+    if (device->GraphicsFamily() == device->PresentFamily()) {
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         swapchainCreateInfo.queueFamilyIndexCount = 0;
         swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-    }
-    else
-    {
+    } else {
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         swapchainCreateInfo.queueFamilyIndexCount = 2;
         swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -40,19 +36,16 @@ VulkanSwapchain::VulkanSwapchain(VulkanDeviceRef device, VkSurfaceKHR surface, V
     VULKAN_GPU_SAFE_CALL(vkCreateSwapchainKHR(device->Device(), &swapchainCreateInfo, nullptr, &swapchain));
 }
 
-const VkSwapchainKHR &VulkanSwapchain::Swapchain() const
-{
+const VkSwapchainKHR &VulkanSwapchain::Swapchain() const {
     return swapchain;
 }
 
-VulkanSwapchain::~VulkanSwapchain()
-{
+VulkanSwapchain::~VulkanSwapchain() {
     vkDestroySwapchainKHR(device->Device(), swapchain, nullptr);
 }
 
 VulkanSwapchainImageView::VulkanSwapchainImageView(VulkanDeviceRef device, VulkanSwapchainRef swapchain, VkImage swapchainImage, VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent)
-    : device(device), swapchain(swapchain)
-{
+    : device(device), swapchain(swapchain) {
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.image = swapchainImage;
@@ -73,12 +66,10 @@ VulkanSwapchainImageView::VulkanSwapchainImageView(VulkanDeviceRef device, Vulka
     VULKAN_GPU_SAFE_CALL(vkCreateImageView(device->Device(), &imageViewCreateInfo, nullptr, &imageView));
 }
 
-const VkImageView &VulkanSwapchainImageView::GetImageView() const
-{
+const VkImageView &VulkanSwapchainImageView::GetImageView() const {
     return imageView;
 }
 
-VulkanSwapchainImageView::~VulkanSwapchainImageView()
-{
+VulkanSwapchainImageView::~VulkanSwapchainImageView() {
     vkDestroyImageView(device->Device(), imageView, nullptr);
 }

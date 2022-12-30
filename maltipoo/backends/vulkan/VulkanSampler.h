@@ -5,12 +5,11 @@
 
 #include <vulkan/vulkan.h>
 
-struct VulkanSampler : GPUSampler
-{
-	VulkanDeviceRef device;
-	VkSampler sampler;
+struct VulkanSampler : GPUSampler {
+    VulkanDeviceRef device;
+    VkSampler sampler;
 
-	VulkanSampler(VulkanDeviceRef device, VkSampler sampler);
+    VulkanSampler(VulkanDeviceRef device, VkSampler sampler);
 
-	virtual ~VulkanSampler() override;
+    virtual ~VulkanSampler() override;
 };

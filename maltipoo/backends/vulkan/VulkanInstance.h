@@ -1,20 +1,19 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <vector>
 #include <memory>
+#include <vector>
+#include <vulkan/vulkan.hpp>
 
-class VulkanInstance
-{
-public:
-	VulkanInstance(const std::vector<const char*>& enabledExtensions);
+class VulkanInstance {
+  public:
+    VulkanInstance(const std::vector<const char *> &enabledExtensions);
 
-	virtual ~VulkanInstance();
+    virtual ~VulkanInstance();
 
-	const VkInstance& Instance();
+    const VkInstance &Instance();
 
-private:
-	VkInstance instance;
+  private:
+    VkInstance instance;
 };
 
 using VulkanInstanceRef = std::shared_ptr<VulkanInstance>;

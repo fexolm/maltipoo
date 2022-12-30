@@ -1,18 +1,15 @@
 #include "VulkanImage.h"
 
 VulkanImage::VulkanImage(VulkanDeviceRef device, VkImage img, VkDeviceMemory memory, VkImageView view)
-	: device(device), image(img), memory(memory), view(view)
-{
+    : device(device), image(img), memory(memory), view(view) {
 }
 
-const VkImageView &VulkanImage::GetImageView() const
-{
-	return view;
+const VkImageView &VulkanImage::GetImageView() const {
+    return view;
 }
 
-VulkanImage::~VulkanImage()
-{
-	vkDestroyImageView(device->Device(), view, nullptr);
-	vkDestroyImage(device->Device(), image, nullptr);
-	vkFreeMemory(device->Device(), memory, nullptr);
+VulkanImage::~VulkanImage() {
+    vkDestroyImageView(device->Device(), view, nullptr);
+    vkDestroyImage(device->Device(), image, nullptr);
+    vkFreeMemory(device->Device(), memory, nullptr);
 }

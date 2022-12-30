@@ -1,18 +1,18 @@
 #pragma once
 
-#include "maltipoo/GPU.h"
 #include "Shared.h"
 #include "VulkanCommandList.h"
 #include "VulkanCommandPool.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanDescriptorSet.h"
 #include "VulkanDevice.h"
+#include "VulkanFuture.h"
 #include "VulkanImage.h"
 #include "VulkanRenderPass.h"
-#include "VulkanSwapchain.h"
 #include "VulkanSampler.h"
 #include "VulkanShader.h"
-#include "VulkanFuture.h"
+#include "VulkanSwapchain.h"
+#include "maltipoo/GPU.h"
 
 #include <SDL2/SDL.h>
 #include <glm/vec2.hpp>
@@ -26,75 +26,74 @@
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-class VulkanGPU : public GPUDriver
-{
+class VulkanGPU : public GPUDriver {
 
-public:
-	VulkanGPU(SDL_Window *window, int width, int height);
+  public:
+    VulkanGPU(SDL_Window *window, int width, int height);
 
-	virtual ~VulkanGPU() override;
+    virtual ~VulkanGPU() override;
 
-	virtual GPUShaderRef CreateShader(const std::vector<uint32_t> &code, ShaderType type) override;
+    virtual GPUShaderRef CreateShader(const std::vector<uint32_t> &code, ShaderType type) override;
 
-	virtual GPUBufferRef CreateBuffer(size_t size, const BufferInfo &info) override;
+    virtual GPUBufferRef CreateBuffer(size_t size, const BufferInfo &info) override;
 
-	virtual GPUGraphicsPipelineRef CreateGraphicsPipeline(const GraphicsPipelineCreateInfo &info) override;
+    virtual GPUGraphicsPipelineRef CreateGraphicsPipeline(const GraphicsPipelineCreateInfo &info) override;
 
-	virtual GPUCommandListRef CreateCommandList() override;
+    virtual GPUCommandListRef CreateCommandList() override;
 
-	virtual GPUFutureRef<> Submit(GPUCommandListRef &commandList) override;
+    virtual GPUFutureRef<> Submit(GPUCommandListRef &commandList) override;
 
-	virtual void WaitIdle() override;
+    virtual void WaitIdle() override;
 
-	virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
+    virtual void SubmitAndWaitIdle(GPUCommandListRef &commandList) override;
 
-	virtual GPUFutureRef<GPUTexture> AquireFramebufferImage() override;
+    virtual GPUFutureRef<GPUTexture> AquireFramebufferImage() override;
 
-	virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
+    virtual GPUTextureRef CreateTexture(uint32_t width, uint32_t height) override;
 
-	virtual GPUSamplerRef CreateSampler() override;
+    virtual GPUSamplerRef CreateSampler() override;
 
-	virtual void CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &texture, uint32_t width, uint32_t height) override;
+    virtual void CopyBufferToTexture(const GPUBufferRef &buf, GPUTextureRef &texture, uint32_t width, uint32_t height) override;
 
-	virtual void BeginFrame() override;
+    virtual void BeginFrame() override;
 
-	virtual void Present(GPUFutureRef<> renderFinished) override;
+    virtual void Present(GPUFutureRef<> renderFinished) override;
 
-	VulkanRenderPassRef CreateRenderPass();
+    VulkanRenderPassRef CreateRenderPass();
 
-	VkFramebuffer CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture &renderTarget);
+    VkFramebuffer CreateFramebuffer(VulkanRenderPassRef renderPass, const VulkanTexture &renderTarget);
 
-	VkExtent2D GetExtent();
+    VkExtent2D GetExtent();
 
-	VulkanDescriptorSetRef CreateDescriptorSet(const GPUGraphicsPipelineRef &pipeline, int num);
+    VulkanDescriptorSetRef CreateDescriptorSet(const GPUGraphicsPipelineRef &pipeline, int num);
 
-private:
-	VulkanInstanceRef instance;
-	VulkanDeviceRef device;
+  private:
+    VulkanInstanceRef instance;
+    VulkanDeviceRef device;
 
-	VkSurfaceKHR surface;
+    VkSurfaceKHR surface;
 
-	VkSurfaceFormatKHR surfaceFormat;
-	VkPresentModeKHR presentMode;
-	VkSurfaceCapabilitiesKHR caps;
-	VkExtent2D extent;
+    VkSurfaceFormatKHR surfaceFormat;
+    VkPresentModeKHR presentMode;
+    VkSurfaceCapabilitiesKHR caps;
+    VkExtent2D extent;
 
-	VulkanSwapchainRef swapchain;
-	std::vector<VulkanSwapchainImageViewRef> swapchainImageViews;
+    VulkanSwapchainRef swapchain;
+    std::vector<VulkanSwapchainImageViewRef> swapchainImageViews;
 
-	VulkanCommandPoolRef commandPool;
+    VulkanCommandPoolRef commandPool;
 
-	VulkanDescriptorPoolRef descriptorPool;
+    VulkanDescriptorPoolRef descriptorPool;
 
-	VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
+    VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
 
-	std::unordered_map<int, VkFramebuffer> frameBuffersCache;
-	std::unordered_map<int, VulkanRenderPassRef> renderPassCache;
+    std::unordered_map<int, VkFramebuffer> frameBuffersCache;
+    std::unordered_map<int, VulkanRenderPassRef> renderPassCache;
 
-	uint32_t currentSwapchainImgIdx;
-	uint32_t currentFrame;
+    uint32_t currentSwapchainImgIdx;
+    uint32_t currentFrame;
 
-	VulkanImageRef depthImage;
+    VulkanImageRef depthImage;
 
-	std::unordered_multimap<int, GPUResourceRef> inFlightResources;
+    std::unordered_multimap<int, GPUResourceRef> inFlightResources;
 };
