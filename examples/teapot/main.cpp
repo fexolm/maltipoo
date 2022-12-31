@@ -41,21 +41,13 @@ int main() {
         throw std::runtime_error(warn + err);
     }
 
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec3> normals;
+    std::vector<float> positions = attrib.vertices;
+    std::vector<float> normals = attrib.normals;
     std::vector<uint16_t> indices;
 
     for (const auto &shape : shapes) {
         for (const auto &index : shape.mesh.indices) {
-            positions.emplace_back(attrib.vertices[3 * index.vertex_index + 0],
-                                   attrib.vertices[3 * index.vertex_index + 1],
-                                   attrib.vertices[3 * index.vertex_index + 2]);
-
-            normals.emplace_back(attrib.normals[3 * index.vertex_index + 0],
-                                 attrib.normals[3 * index.vertex_index + 1],
-                                 attrib.normals[3 * index.vertex_index + 2]);
-
-            indices.push_back(indices.size());
+            indices.push_back(index.vertex_index);
         }
     }
 
@@ -76,15 +68,15 @@ int main() {
     pipelineInfo.fragmentShader = frag;
     pipelineInfo.depthStencil.depthTestEnable = true;
     pipelineInfo.rasterizer.cullMode = CullMode::Back;
-    pipelineInfo.rasterizer.faceOrientation = FaceOrientation::CounterClockwise;
+    pipelineInfo.rasterizer.faceOrientation = FaceOrientation::Clockwise;
 
     GPUGraphicsPipelineRef graphicsPipeline = gpu->CreateGraphicsPipeline(pipelineInfo);
 
     BufferInfo vertexInfo;
     vertexInfo.usage = BufferUsage::Vertex;
 
-    GPUBufferRef positionsBuf = gpu->CreateBuffer(positions.size() * sizeof(glm::vec3), vertexInfo);
-    positionsBuf->Write((void *)positions.data(), positions.size() * sizeof(glm::vec3));
+    GPUBufferRef positionsBuf = gpu->CreateBuffer(positions.size() * sizeof(float), vertexInfo);
+    positionsBuf->Write((void *)positions.data(), positions.size() * sizeof(float));
 
     GPUBufferRef normalsBuf = gpu->CreateBuffer(normals.size() * sizeof(glm::vec3), vertexInfo);
     normalsBuf->Write((void *)normals.data(), normals.size() * sizeof(glm::vec3));
@@ -98,11 +90,11 @@ int main() {
     while (!finished) {
 
         UniformBufferObject ubo;
-        ubo.view = glm::lookAt(glm::vec3(0.3f, 0.3f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 10.0f);
+        ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0, 8.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 20.0f);
         ubo.model = glm::mat4(1.0);
 
-        ubo.model = glm::rotate(ubo.model, glm::radians(90.f), glm::vec3(1, 1, 1));
+        ubo.model = glm::translate(ubo.model, glm::vec3(-4, -4, 0));
 
         BufferInfo bufferInfo;
         bufferInfo.usage = BufferUsage::Uniform;
@@ -126,11 +118,11 @@ int main() {
         commandList->BeginRenderPass(aquiredImage);
         commandList->BindPipeline(graphicsPipeline);
 
-        commandList->SetViewport(200, 200, 800, 600);
-        commandList->SetScissors(200, 200, 800, 600);
+        commandList->SetViewport(0, 0, 800, 600);
+        commandList->SetScissors(0, 0, 800, 600);
 
-        commandList->BindVertexBuffer(positionsBuf, 0);
-        commandList->BindVertexBuffer(normalsBuf, 1);
+        commandList->BindVertexBuffer(positionsBuf, 1);
+        commandList->BindVertexBuffer(normalsBuf, 0);
         commandList->BindIndexBuffer(indicesBuf);
         commandList->BindUniformBuffer("uniforms", uboBuf, sizeof(UniformBufferObject));
 
