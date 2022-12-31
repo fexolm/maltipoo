@@ -121,8 +121,8 @@ int main() {
         commandList->SetViewport(0, 0, 800, 600);
         commandList->SetScissors(0, 0, 800, 600);
 
-        commandList->BindVertexBuffer(positionsBuf, 1);
-        commandList->BindVertexBuffer(normalsBuf, 0);
+        commandList->BindVertexBuffer(positionsBuf, 0);
+        commandList->BindVertexBuffer(normalsBuf, 1);
         commandList->BindIndexBuffer(indicesBuf);
         commandList->BindUniformBuffer("uniforms", uboBuf, sizeof(UniformBufferObject));
 

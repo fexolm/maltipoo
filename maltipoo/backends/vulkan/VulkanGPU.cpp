@@ -596,6 +596,10 @@ GPUShaderRef VulkanGPU::CreateShader(const std::vector<uint32_t> &code, ShaderTy
 
     auto res = std::make_shared<VulkanShader>(device, shaderModule);
 
+    std::sort(resources.stage_inputs.begin(), resources.stage_inputs.end(), [&comp](auto &l, auto &r) {
+        return comp.get_decoration(l.id, spv::DecorationLocation) < comp.get_decoration(r.id, spv::DecorationLocation);
+    });
+
     if (type == ShaderType::Vertex) {
         int i = 0;
         for (auto &b : resources.stage_inputs) {
