@@ -15,8 +15,8 @@ VkPhysicalDevice choosePhysicalDevice(VkInstance instance) {
             return device;
         }
     }
-    // TODO: throw
-    return nullptr;
+    // TODO: should not use first device
+    return physicalDevices[0];
 }
 
 std::vector<VkQueueFamilyProperties>
